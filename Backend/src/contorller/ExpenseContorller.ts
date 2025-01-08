@@ -56,16 +56,16 @@ export class ExpenseContorller extends Contorller {
     public async updateById(req: Request, res: Response): Promise<void> {
         try {
             const { sid, ...updateData } = req.body;
-            const resp = await this.service.updateById(id, updateData);
+            const resp = await this.service.updateById(sid as string, updateData);
             res.status(resp.code).send(resp);
         } catch (error) {
             res.status(500).send({
                 code: 500,
-                message: "更新失敗",
+                message: "更新失敗", 
                 body: undefined
             });
         }
-    }
+     }
 
     public async query(req: Request, res: Response): Promise<void> {
         try {

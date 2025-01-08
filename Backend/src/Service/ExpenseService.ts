@@ -61,12 +61,11 @@ export class ExpenseService extends Service {
         }
     }
 
-    public async updateById(sid: number, updateData: Partial<ExpenseRecord>): Promise<DBResp<ExpenseRecord>> {
+    public async updateById(sid: string, updateData: Partial<ExpenseRecord>): Promise<DBResp<ExpenseRecord>> {
         try {
-            const result = await ExpenseModel.findByIdAndUpdate(
-                sid,
-                updateData,
-                { new: true }
+            const result = await ExpenseModel.updateOne(
+                { sid: sid },
+                updateData
             );
             if (!result) {
                 return {
