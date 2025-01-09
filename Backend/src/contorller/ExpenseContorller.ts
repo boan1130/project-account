@@ -42,6 +42,7 @@ export class ExpenseContorller extends Contorller {
 
     public async deleteById(req: Request, res: Response): Promise<void> {
         try {
+            console.log(req.query.sid)
             const resp = await this.service.deleteById(req.query.sid as string);
             res.status(resp.code).send(resp);
         } catch (error) {

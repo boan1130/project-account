@@ -43,6 +43,7 @@ export class ExpenseService extends Service {
 
     public async deleteById(sid: string): Promise<DBResp<any>> {
         try {
+            console.log(sid);
             const result = await ExpenseModel.deleteOne({ sid: sid });;
             if (!result) {
                 return {

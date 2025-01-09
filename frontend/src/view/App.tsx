@@ -5,9 +5,9 @@ import { asyncDelete, asyncGet, asyncPost, asyncPut } from "../apiService";
 
 interface Expense {
   _id?: string;
-  sid:number
+  sid:string;
   name: string;
-  price: number;
+  price: string;
   remark: string;
 }
 
@@ -17,9 +17,9 @@ const App: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [currentPage, setCurrentPage] = useState("home");
   const [formData, setFormData] = useState<Expense>({
-    sid:0,
+    sid:"",
     name: "",
-    price: 0,
+    price:"" ,
     remark: ""
   });
 
@@ -70,7 +70,7 @@ const App: React.FC = () => {
       // 成功提示
       alert("新增成功！");
       fetchExpenses(); // 新增後重新載入資料
-      setFormData({ sid: 0, name: "", price: 0, remark: "" });
+      setFormData({ sid: "", name: "", price: "", remark: "" });
       setCurrentPage("home"); // 返回主頁
     } catch (error) {
       console.error("Error adding expense:", error);
@@ -78,20 +78,35 @@ const App: React.FC = () => {
     }
   };
 
-  const deleteExpense = async (sid: number) => {
+  const deleteExpense = async (sid: string) => {
+    
+  
+    const confirmDelete = window.confirm("確定要刪除此支出嗎？");
+    if (!confirmDelete) return;
+  
     try {
-      await asyncDelete(`${API_URL}delete/${sid}`);
-      alert("刪除成功！");
+      // 顯示加載提示（可以替換為更友好的界面提示）
+      console.log("正在刪除支出...");
+  
+      const response = await asyncDelete<{ message: string }>(`${API_URL}delete?sid=${sid}`);
+  
+      // 成功提示，顯示後端返回的訊息
+      alert(response.message || "刪除成功！");
       fetchExpenses(); // 刪除後重新載入資料
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting expense:", error);
-      alert("刪除失敗，請檢查後端連接！");
+      
+      // 根據錯誤內容顯示更詳細的提示
+      alert(error.message || "刪除失敗，請檢查後端連接！");
     }
   };
+  
+  
 
   const updateExpense = async () => {
     try {
-      await asyncPut(`${API_URL}update/${formData.sid}`, {
+      await asyncPut(`${API_URL}update`, {
+        sid: formData.sid,
         name: formData.name,
         price: formData.price,
         remark: formData.remark,
@@ -178,29 +193,45 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {currentPage === "delete" && (
-        <div className="card">
-          <div className="home-button" onClick={() => setCurrentPage("home")}>
-            <img src={homeIcon} alt="Home" />
-          </div>
+{currentPage === "delete" && (
+  <div className="card">
+    <div className="home-button" onClick={() => setCurrentPage("home")}>
+      <img src={homeIcon} alt="Home" />
+    </div>
 
-          <h2>刪除一筆花費</h2>
-          <input
-            className="input"
-            name="sid"
-            placeholder="輸入序號"
-            value={formData._id}
-            onChange={handleInputChange}
-          />
-           <button className="btn primary" onClick={() => deleteExpense(parseInt(formData._id))}>完成</button> 
-          <button
-            className="btn secondary"
-            onClick={() => setCurrentPage("home")}
-          >
-            返回
-          </button>
-        </div>
-      )}
+    <h2>刪除一筆花費</h2>
+    
+    <input
+      className="input"
+      name="sid"
+      placeholder="輸入序號"
+      value={formData.sid || ""}
+      onChange={handleInputChange}
+    />
+    
+    <button
+  className="btn primary"
+  onClick={() => {
+    const sid = parseInt(formData.sid);
+    if (isNaN(sid) || sid <= 0) {
+      alert("請輸入有效的序號！");
+      return;
+    }
+    deleteExpense(sid);
+  }}
+>
+  完成
+</button>
+
+    
+    <button
+      className="btn secondary"
+      onClick={() => setCurrentPage("home")}
+    >
+      返回
+    </button>
+  </div>
+)}
 
       {currentPage === "update" && (
         <div className="card">
@@ -238,7 +269,7 @@ const App: React.FC = () => {
             value={formData.remark}
             onChange={handleInputChange}
           />
-          <button className="btn primary" onClick={() => updateExpense(parseInt(formData.sid))}>完成</button> 
+          <button className="btn primary" onClick={() => updateExpense(parseInt(formData.sid.toString()))}>完成</button> 
           <button
             className="btn secondary"
             onClick={() => setCurrentPage("home")}
